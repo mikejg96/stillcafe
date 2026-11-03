@@ -1,0 +1,958 @@
+/* Sizes are taken from the 2560×1440 Figma frame and expressed in vw so the
+   layout keeps its proportions; clamp() keeps them readable on small screens. */
+:root {
+  --cream: #ece6dd;
+  --taupe: #90795d;
+  --mist: #e7e9ed;
+  --paper: #ebe2d2;
+  --paper-texture:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .34 0 0 0 0 .24 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--paper);
+  --ink: #977a59;
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  background: var(--cream);
+  overscroll-behavior-x: none; /* sideways swipes drive the carousel, not browser back */
+}
+
+html.is-locked,
+html.is-locked body {
+  overflow: hidden;
+}
+
+body {
+  font-family: "Google Sans", system-ui, -apple-system, sans-serif;
+  color: var(--taupe);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Loader ---------- */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: var(--cream);
+  transition: opacity 1s var(--ease-soft), visibility 0s 1s;
+}
+
+html:not(.is-loading) .loader {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader__bar {
+  width: 120px;
+  height: 1px;
+  background: rgb(144 121 93 / 0.2);
+  overflow: hidden;
+}
+
+.loader__bar span {
+  display: block;
+  height: 100%;
+  background: var(--taupe);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  transition: transform 0.3s linear;
+}
+
+.loader__label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Scroll stage ---------- */
+
+.stage {
+  position: relative;
+  height: 680vh; /* overwritten from js/main.js to fit the scroll timeline */
+}
+
+.stage__sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.stage__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Showcase: seq_02 end frame → card → carousel ----------
+   Card geometry comes from js/main.js as custom properties on .carousel;
+   --s is the artboard scale (1 = the 2560px Figma frame). */
+
+.showcase {
+  --s: 1;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  visibility: hidden;
+}
+
+.showcase.is-active {
+  visibility: visible;
+}
+
+/* One full-screen scene per card; only the active card's is shown. */
+.scenes,
+.scene,
+.scene__media,
+.scenes__mono {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scene {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-soft);
+}
+
+.scene.is-active {
+  opacity: 1;
+}
+
+.scene__media {
+  display: block;
+  object-fit: cover;
+}
+
+/* Turns everything black and white except the centre card's window. It blends
+   with whatever is underneath, so it is a no-op over the white page. */
+.scenes__mono {
+  background: #000;
+  mix-blend-mode: saturation;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-size: 100% 100%, var(--hole-w, 0) var(--hole-h, 0);
+  -webkit-mask-position: 0 0, var(--hole-x, 0) var(--hole-y, 0);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-size: 100% 100%, var(--hole-w, 0) var(--hole-h, 0);
+  mask-position: 0 0, var(--hole-x, 0) var(--hole-y, 0);
+  mask-repeat: no-repeat;
+  mask-composite: exclude;
+}
+
+/* Cover-flow carousel. Each .slot fills the screen and is moved/turned as a whole,
+   so every card shares the same centred geometry. */
+.carousel {
+  position: absolute;
+  inset: 0;
+  perspective: 1800px;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* A native image drag would cancel the swipe gesture. */
+.carousel img {
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.slot {
+  --x: 0px;
+  --ry: 0deg;
+  --sc: 1;
+  position: absolute;
+  inset: 0;
+  opacity: var(--op, 1);
+  transform: translate3d(var(--x), 0, 0) rotateY(var(--ry)) scale(var(--sc));
+  transition:
+    transform 0.8s var(--ease-soft),
+    opacity 0.8s var(--ease-soft);
+  pointer-events: none;
+}
+
+/* First appearance: the side cards fan out slowly from behind the centre card. */
+.carousel.is-opening .slot {
+  transition-duration: 1.8s;
+  transition-delay: var(--delay, 0s);
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--cw);
+  height: var(--ch);
+  overflow: hidden;
+  border-radius: var(--cr);
+  transform: translate3d(var(--cx), var(--cy), 0) scale(var(--ck));
+  transition: filter 0.8s var(--ease-soft);
+  will-change: transform;
+}
+
+.carousel.is-open .card {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.carousel.is-open .card.is-active {
+  cursor: grab;
+}
+
+/* Only the centre card is in focus and in colour. */
+.carousel.is-open .card:not(.is-active) {
+  filter: blur(1.6px);
+}
+
+.carousel.is-open .card:not(.is-active) .card__poster {
+  filter: grayscale(1);
+}
+
+/* The card's grey is painted by the photo window's spread shadow, so the
+   window itself can be see-through to the scene behind. */
+.card__media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--mw);
+  height: var(--mh);
+  overflow: hidden;
+  border-radius: var(--mr);
+  box-shadow: 0 0 0 200vmax rgb(237 237 237 / var(--bg));
+  transform: translate3d(var(--pad), var(--pad), 0);
+}
+
+.card__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(var(--zoom));
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.7s var(--ease-soft),
+    filter 0.8s var(--ease-soft);
+}
+
+/* The centre card shows its scene through the window instead of the still. */
+.card.is-showing-scene .card__poster {
+  opacity: 0;
+}
+
+.card__body {
+  position: absolute;
+  left: calc(50.2px * var(--s));
+  top: calc(571.5px * var(--s));
+  color: #040707;
+  font-family: "Neue Montreal", "Inter Tight", "Google Sans", sans-serif;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Card text comes in one line at a time (--i is the line). */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(4px);
+  transition:
+    opacity 0.45s var(--ease-soft),
+    transform 0.45s var(--ease-soft),
+    filter 0.45s var(--ease-soft);
+}
+
+.card__body.is-in .reveal {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition-duration: 1.3s;
+  transition-delay: calc(var(--i) * 0.3s + var(--body-delay, 0s));
+}
+
+.card__title {
+  font-size: calc(62.59px * var(--s));
+  font-weight: 700;
+}
+
+.card__tagline {
+  font-size: max(calc(25.68px * var(--s)), 12px);
+  font-weight: 500;
+}
+
+.card__meta,
+.card__ratings {
+  display: grid;
+  font-size: max(calc(14.44px * var(--s)), 10px);
+}
+
+.card__meta {
+  grid-template-columns: calc(210.45px * var(--s)) auto;
+  row-gap: calc(7.77px * var(--s));
+  margin-top: calc(36.6px * var(--s));
+}
+
+.card__ratings {
+  grid-template-columns: calc(167.97px * var(--s)) calc(158.32px * var(--s)) auto;
+  margin-top: calc(59.9px * var(--s));
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+
+.card__ratings li {
+  display: flex;
+  flex-direction: column;
+  gap: calc(5.84px * var(--s));
+}
+
+.dots {
+  display: flex;
+  gap: calc(7.72px * var(--s));
+}
+
+.dots i {
+  width: calc(9.65px * var(--s));
+  height: calc(9.65px * var(--s));
+  border-radius: 50%;
+  background: #b89777;
+}
+
+/* Prev / next under the centre card. Taupe on the white page, light over scenes. */
+.carousel-nav {
+  position: absolute;
+  top: var(--nav-top, 80%);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.2vw, 40px);
+  color: var(--taupe);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 10px);
+  transition:
+    opacity 1s var(--ease-soft) 0.6s,
+    transform 1s var(--ease-soft) 0.6s,
+    visibility 0s 1.6s,
+    color 0.6s var(--ease-soft);
+}
+
+.showcase.is-carousel .carousel-nav {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0.6s, 0.6s, 0s, 0s;
+}
+
+.showcase.is-dark-scene .carousel-nav {
+  color: var(--mist);
+}
+
+.carousel-nav__btn {
+  display: grid;
+  place-items: center;
+  width: clamp(34px, 2.2vw, 64px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+
+.carousel-nav__btn:hover {
+  background: rgb(144 121 93 / 0.12);
+}
+
+.showcase.is-dark-scene .carousel-nav__btn:hover {
+  background: rgb(255 255 255 / 0.15);
+}
+
+.carousel-nav__btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  background: transparent;
+}
+
+.carousel-nav__btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.carousel-nav__btn svg {
+  width: 45%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.carousel-nav__count {
+  min-width: 4.5em;
+  font-size: clamp(11px, 0.72vw, 26px);
+  letter-spacing: 0.14em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Hero: logo + tagline ---------- */
+
+.hero {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(26px, 3.16vw, 120px);
+  padding-bottom: 2.5vh;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.hero__logo,
+.hero__tagline {
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(10px);
+  transition:
+    opacity 2.8s var(--ease-soft),
+    transform 2.8s var(--ease-soft),
+    filter 2.8s var(--ease-soft);
+}
+
+.hero__tagline {
+  transition-delay: 0.7s;
+}
+
+.is-revealed .hero__logo,
+.is-revealed .hero__tagline {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+.hero__logo img {
+  display: block;
+  width: clamp(76px, 4.92vw, 220px);
+  height: auto;
+}
+
+.hero__sub {
+  position: relative;
+}
+
+.hero__tagline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7em;
+  font-size: clamp(14px, 1.153vw, 48px);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.hero__noun {
+  font-family: "Inter", sans-serif;
+  font-weight: 200;
+  font-size: 0.922em;
+}
+
+.hero__noun i {
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* ---------- Intro progress: tracks seq_01 from 0 to 100, under the tagline ---------- */
+
+.intro-progress {
+  position: absolute;
+  top: calc(100% + clamp(60px, 7vh, 200px));
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 0.6vw, 22px);
+  color: var(--taupe);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.8s var(--ease-soft);
+}
+
+.is-playing .intro-progress {
+  opacity: 1;
+}
+
+.intro-progress__track {
+  width: clamp(90px, 6vw, 240px);
+  height: clamp(1.5px, 0.08vw, 3px);
+  border-radius: 99px;
+  background: rgb(144 121 93 / 0.22);
+  overflow: hidden;
+}
+
+.intro-progress__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+}
+
+.intro-progress__label {
+  font-size: clamp(10px, 0.72vw, 26px);
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Scroll cue ---------- */
+
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(20px, 1.56vw, 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 2.34vw, 80px);
+  color: var(--mist);
+  text-shadow: 0 1px 14px rgb(60 45 30 / 0.25);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition:
+    opacity 1.4s var(--ease-soft),
+    color 0.6s var(--ease-soft);
+  pointer-events: none;
+}
+
+.scroll-cue.is-on-light {
+  color: var(--taupe);
+  text-shadow: none;
+}
+
+.scroll-cue.is-on-light svg {
+  filter: none;
+}
+
+.is-scroll-ready .scroll-cue {
+  opacity: 1;
+  transition-delay: 0.5s, 0s; /* opacity waits for the progress line to fade out */
+}
+
+.is-scroll-ready .scroll-cue.is-hidden {
+  opacity: 0;
+  transition-duration: 0.6s;
+  transition-delay: 0s;
+}
+
+.scroll-cue svg {
+  width: clamp(9px, 0.664vw, 26px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 1px 8px rgb(60 45 30 / 0.2));
+}
+
+.scroll-cue__dot {
+  transform-box: fill-box;
+  animation: cue-dot 2.4s var(--ease-soft) infinite;
+}
+
+.scroll-cue span {
+  font-size: clamp(11px, 0.977vw, 36px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@keyframes cue-dot {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(35%); }
+}
+
+/* ---------- Finale: soft-opening page, drawn once it comes into view ----------
+   --q runs 0 → 1 over a few seconds (js/main.js), like a video playing through.
+   Each piece starts at its own --at. Desktop places everything on a 1683×934
+   board taken from the poster; phones stack it. */
+
+.finale {
+  --q: 0;
+  position: relative;
+  z-index: 1;
+  color: var(--ink);
+  background: var(--paper-texture);
+}
+
+/* Cream fade over the bottom of the carousel, so the scroll into the finale is seamless. */
+.finale::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: calc(100% - 2px); /* overlap, so no sub-pixel gap shows the stage through */
+  left: 0;
+  height: 45vh;
+  background: var(--paper-texture);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 85%);
+  mask-image: linear-gradient(to bottom, transparent, #000 85%);
+  pointer-events: none;
+}
+
+.finale__inner {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  /* Soft light, kept clear of the top edge so it doesn't show a seam under the cream fade. */
+  background:
+    radial-gradient(60% 38% at 30% 55%, rgb(255 255 255 / 0.3), transparent 70%),
+    radial-gradient(50% 45% at 80% 85%, rgb(190 165 130 / 0.18), transparent 70%);
+}
+
+.finale__board {
+  position: relative;
+  width: min(calc(100vw - 32px), calc((100svh - 32px) * 1683 / 934));
+  aspect-ratio: 1683 / 934;
+  container-type: inline-size;
+  font-family: "Belleza", "Google Sans", sans-serif;
+}
+
+.ln {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--sw, 1.6);
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: calc(1 - clamp(0, (var(--q) - var(--at, 0)) * 5, 1));
+}
+
+.ln--faint {
+  opacity: 0.45;
+}
+
+.fx {
+  --t: clamp(0, (var(--q) - var(--at, 0)) * 8, 1);
+  opacity: var(--t);
+  translate: 0 calc((1 - var(--t)) * 14px);
+}
+
+.finale__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.finale__board > :not(svg) {
+  position: absolute;
+  z-index: 1;
+}
+
+.finale__head {
+  inset: 14.03% 2.8% auto 2.85%;
+  height: 0;
+}
+
+.finale__place,
+.finale__kind {
+  position: absolute;
+  top: 0;
+  font-size: 0.95cqw;
+  letter-spacing: 0.32em;
+  transform: translateY(-50%);
+}
+
+.finale__place {
+  left: 0;
+}
+
+.finale__kind {
+  right: -0.32em; /* cancels the trailing letter-spacing */
+}
+
+.finale__logo {
+  position: absolute;
+  top: 0.6cqw;
+  left: 50%;
+  width: 6.7cqw;
+  height: auto;
+  transform: translate(-50%, -50%);
+}
+
+.finale__title {
+  left: 3.5%;
+  top: 26.6%;
+  display: flex;
+  flex-direction: column;
+  font-weight: 400;
+  font-size: 5.6cqw;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+}
+
+.finale__when {
+  left: 3.9%;
+  top: 49.3%;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.68cqw;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+}
+
+.finale__when sup {
+  font-size: 0.55em;
+  letter-spacing: 0.02em;
+}
+
+.finale__item {
+  left: 82.5%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85cqw;
+  font-size: 1.42cqw;
+  line-height: 1.5;
+}
+
+.finale__item--where {
+  top: 30.5%;
+}
+
+.finale__item--hours {
+  top: 51.2%;
+}
+
+.finale__item svg {
+  width: 1.75cqw;
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.finale__item--where svg {
+  width: 1.55cqw;
+}
+
+.finale__foot {
+  inset: 86.6% 2.8% auto 2.85%;
+  height: 0;
+}
+
+.finale__foot-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4.7cqw;
+  height: auto;
+  transform: translateY(-50%);
+}
+
+.finale__nav {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  gap: 3.3cqw;
+  transform: translate(-50%, -50%);
+}
+
+.finale__nav a,
+.finale__ig {
+  color: inherit;
+  text-decoration: none;
+}
+
+.finale__nav a {
+  font-size: 0.95cqw;
+  letter-spacing: 0.3em;
+}
+
+.finale__nav a:hover,
+.finale__ig:hover {
+  color: #6f5639;
+}
+
+.finale__ig {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: block;
+  width: 1.9cqw;
+  transform: translateY(-50%);
+}
+
+.finale__ig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+}
+
+.finale__ig-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Phones: stack the poster; the line drawing is cropped to the storefront (js/main.js). */
+@media (max-width: 760px) {
+  .finale__board {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5cqw;
+    padding: 6cqw 6cqw 8cqw;
+  }
+
+  .finale__board > :not(svg),
+  .finale__lines {
+    position: relative;
+    inset: auto;
+  }
+
+  .finale__lines {
+    --sw: 2.6;
+    width: 100%;
+    height: auto;
+    margin: 2cqw 0;
+    overflow: hidden; /* the board's header, divider and footer rules sit outside this crop */
+  }
+
+  .finale__head {
+    order: -2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: auto;
+  }
+
+  .finale__place,
+  .finale__kind,
+  .finale__logo {
+    position: static;
+    transform: none;
+  }
+
+  .finale__place,
+  .finale__kind {
+    font-size: 2.7cqw;
+  }
+
+  .finale__kind {
+    margin-right: -0.32em;
+  }
+
+  .finale__logo {
+    width: 17cqw;
+  }
+
+  .finale__title {
+    order: -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 0.25em;
+    font-size: 12.5cqw;
+  }
+
+  .finale__when {
+    order: -1;
+    font-size: 4.2cqw;
+  }
+
+  .finale__item {
+    flex-direction: row;
+    align-items: center;
+    gap: 3.5cqw;
+    font-size: 4.2cqw;
+    line-height: 1.4;
+  }
+
+  .finale__item svg,
+  .finale__item--where svg {
+    flex: none;
+    width: 6cqw;
+  }
+
+  .finale__foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4cqw;
+    height: auto;
+    padding-top: 5cqw;
+    border-top: 1px solid rgb(151 122 89 / 0.5);
+  }
+
+  .finale__foot-logo,
+  .finale__nav,
+  .finale__ig {
+    position: static;
+    transform: none;
+  }
+
+  .finale__foot-logo {
+    width: 14cqw;
+  }
+
+  .finale__nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2cqw 6cqw;
+  }
+
+  .finale__nav a {
+    font-size: 2.8cqw;
+  }
+
+  .finale__ig {
+    width: 6cqw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__logo,
+  .hero__tagline,
+  .scroll-cue,
+  .reveal,
+  .card__body.is-in .reveal,
+  .slot,
+  .carousel.is-opening .slot,
+  .scene {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+
+  .scroll-cue__dot {
+    animation: none;
+  }
+}

@@ -1,0 +1,10 @@
+.git
+.claude
+node_modules
+dist
+**/.DS_Store
+
+# Raw frame exports; the site uses the WebP copies in public/asset/frames/
+public/asset/seq_01
+public/asset/seq_02
+public/asset/seq_03
