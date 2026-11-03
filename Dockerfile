@@ -1,15 +1,12 @@
-FROM node:20-alpine
+# Still. v2 — a static site (no build step), served by nginx.
+FROM nginx:1.27-alpine
 
-WORKDIR /app
+# Same port as v1 so the live deployment keeps working unchanged. Hosts that
+# inject their own PORT (Railway, Render, Fly, …) override it at run time.
+ENV PORT=4173
 
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-
-RUN npm run build
+# The nginx image fills ${PORT} into this template when the container starts.
+COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY public/ /usr/share/nginx/html/
 
 EXPOSE 4173
-
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
-
