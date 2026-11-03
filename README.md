@@ -21,10 +21,10 @@ Same setup as v1 (Vite; the site code itself is plain HTML/CSS/JS):
 npm install
 npm run dev        # local development
 npm run build      # outputs dist/
-npm run preview    # serves dist/ on port 4173
+npm run preview    # serves dist/ on port 4173 (for checking a build)
 ```
 
-With Docker (what the live deployment runs, on port 4173):
+With Docker (what the live deployment runs: Node builds, nginx serves on port 4173):
 
 ```bash
 docker build -t stillcafe .

@@ -1,4 +1,5 @@
-FROM node:20-alpine
+# Build with Node (same steps as before), then serve the built site with nginx.
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -9,6 +10,9 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 4173
+FROM nginx:1.27-alpine
 
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 4173
