@@ -1,0 +1,107 @@
+/*
+ * Card geometry from Figma SEQ3 (centre card 460.6 × 694.6 on a 1920 frame). Every size is a
+ * fraction of the card width `--card-w`, so a card is the same design at any size – and the
+ * carousel can shrink the other cards with a plain transform, as Figma does (234.5 / 460.6).
+ */
+.card {
+  --w: var(--card-w);
+
+  position: relative;
+  width: var(--w);
+  height: calc(var(--w) * 1.5082);
+  padding: calc(var(--w) * 0.0231);
+  border-radius: calc(var(--w) * 0.0792);
+  background: var(--card);
+  color: var(--card-ink);
+  font-family: var(--font-card);
+  line-height: 1.2;
+  /* Phones must not enlarge the small print: the card is laid out as one proportional design. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  white-space: nowrap;
+  transform-origin: 50% 50%;
+  /* Moved, scaled and blurred by the carousel: keep it on its own layer. */
+  will-change: transform, filter;
+}
+
+.card__photo {
+  position: relative;
+  height: calc(var(--w) * 0.934);
+  border-radius: calc(var(--w) * 0.0627);
+  overflow: hidden;
+  background: #ddd;
+}
+
+.card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 85%;
+  display: block;
+}
+
+.card__body {
+  padding: calc(var(--w) * 0.0198) 0 0 calc(var(--w) * 0.0627);
+}
+
+.card__name {
+  font-size: calc(var(--w) * 0.107);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card__origin {
+  font-size: calc(var(--w) * 0.0439);
+  font-weight: 500;
+}
+
+.card__details {
+  display: grid;
+  grid-template-columns: calc(var(--w) * 0.3597) auto;
+  row-gap: calc(var(--w) * 0.0165);
+  margin-top: calc(var(--w) * 0.0634);
+  font-size: calc(var(--w) * 0.0247);
+}
+
+.card__profile {
+  display: grid;
+  grid-template-columns: calc(var(--w) * 0.2871) calc(var(--w) * 0.2706) auto;
+  margin-top: calc(var(--w) * 0.099);
+  padding: 0;
+  list-style: none;
+}
+
+.card__label {
+  display: block;
+  font-size: calc(var(--w) * 0.0247);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.card__dots {
+  display: flex;
+  gap: calc(var(--w) * 0.0132);
+  margin-top: calc(var(--w) * 0.0098);
+}
+
+.card__dots i {
+  width: calc(var(--w) * 0.0165);
+  height: calc(var(--w) * 0.0165);
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* Whole-card hit area for selecting it in the carousel. */
+.card__hit {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.card__hit:focus-visible {
+  outline: 2px solid var(--taupe);
+  outline-offset: 4px;
+}

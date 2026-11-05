@@ -1,0 +1,81 @@
+/*
+ * SEQ3, Figma "in this section only" (1920 × 1080): a gradient from the wave's colour to white,
+ * the centre card 460.6 wide with its middle at half height, "im feeling lucky" at y 80.
+ */
+
+.cards {
+  /* 460.6 / 1920 – at most 62% of the screen's height tall (card height is 1.508 × width). */
+  --card-w: clamp(220px, 24vw, calc(var(--stage-h) * 0.41));
+
+  position: relative;
+  z-index: 1;
+  /* Slides up over the end of the intro's pin, whose wave is already this colour. */
+  margin-top: calc(var(--stage-h) * var(--overlap, 0) * -1);
+  min-height: var(--stage-h);
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--blush) 7.36%, var(--paper));
+}
+
+.cards__inner {
+  position: relative;
+  height: var(--stage-h);
+}
+
+.cards__lucky {
+  position: absolute;
+  top: 7.4%;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 200;
+  padding: 0.5em 1em;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-family: var(--font-card);
+  font-weight: 700;
+  font-size: clamp(14px, 1.22vw, 24px);
+  cursor: pointer;
+  transition: scale 0.25s ease;
+}
+
+.cards__lucky:hover {
+  scale: 1.04;
+}
+
+.cards__lucky:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.cards__track {
+  position: absolute;
+  inset: 0;
+  /* Sideways drags go to the carousel; vertical ones keep scrolling the page. */
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cards__track.is-dragging {
+  cursor: grabbing;
+}
+
+/* While dragging, a press on a card is not a click. */
+.cards__track.is-dragging .card__hit {
+  pointer-events: none;
+}
+
+.cards__slot {
+  position: absolute;
+  left: calc(50% - var(--card-w) / 2);
+  top: calc(50% - var(--card-w) * 1.5082 / 2);
+}
+
+/* Phones: a bigger card, so its small print stays legible at the design's proportions. */
+@media (max-width: 767px) {
+  .cards {
+    --card-w: min(68vw, calc(var(--stage-h) * 0.41));
+  }
+}

@@ -1,0 +1,72 @@
+/*
+ * SEQ5, Figma "Scroll 9" (1920 × 1080): white fading to sand at the bottom, the logo 266.7 wide,
+ * a rule from x 296 to 1632.5 and four links centred 328.8 apart. The block is 70% of a screen
+ * tall (Figma's frame is a full one) so the end of the page is a short scroll away.
+ */
+
+.footer {
+  position: relative;
+  height: calc(var(--stage-h) * 0.7);
+  min-height: 420px;
+  overflow: hidden;
+  background: linear-gradient(to top, var(--sand) 7.36%, var(--paper));
+}
+
+/* Hidden until the footer animates in. */
+.footer__logo,
+.footer__link {
+  opacity: 0;
+}
+
+.footer__logo {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  translate: -50% 0;
+  width: max(150px, 13.9vw);
+  height: auto;
+}
+
+.footer__rule {
+  position: absolute;
+  top: 71%;
+  left: 15.42%;
+  right: 14.97%;
+  height: 1px;
+  background: var(--rule);
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+}
+
+.footer__nav ul {
+  position: absolute;
+  top: 76%;
+  left: 50%;
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 68.5vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+}
+
+.footer__link {
+  display: inline-block;
+  padding: 0.4em 0.6em;
+  color: var(--dot);
+  font-size: max(11px, 1.3vw);
+  transition: color 0.3s ease;
+}
+
+.footer__link:hover,
+.footer__link:focus-visible {
+  color: var(--taupe);
+}
+
+@media (max-width: 767px) {
+  .footer__nav ul {
+    width: 92vw;
+  }
+}

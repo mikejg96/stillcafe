@@ -1,0 +1,129 @@
+@import 'lenis/dist/lenis.css';
+
+/* Self-hosted Latin subsets (OFL) – the families used in Figma. */
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/google-sans-400-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/google-sans-700-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url('./fonts/inter-200-latin.woff2') format('woff2');
+}
+
+:root {
+  /* Stage height for pinned scenes. svh = stable on mobile (ignores URL-bar show/hide). */
+  --stage-h: 100vh;
+
+  /* Brand tokens, from the Figma `stillcafe` page. */
+  --paper: #fff;
+  --taupe: #90795d;
+  /* Cards section top / the wave that hands over to it. */
+  --blush: #dfc3b0;
+  --card: #fff;
+  --card-ink: #040707;
+  /* Card rating dots, info blocks and footer links. */
+  --dot: #b89777;
+  /* Footer gradient and rule. */
+  --sand: #e7dfd0;
+  --rule: #997a5b;
+  --ink: #1c1b19;
+
+  --font-sans: 'Google Sans', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  /* Neue Montreal is commercial: add licensed files to src/styles/fonts to use it. */
+  --font-card: 'Neue Montreal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-def: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --stage-h: 100svh;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+img,
+video,
+canvas,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ─── Pinned scene primitive ─────────────────────────────────────────────── */
+
+.pinned {
+  position: relative;
+  height: calc(var(--stage-h) * (var(--pin-length, 1) + 1));
+}
+
+.pinned__stage {
+  position: sticky;
+  top: 0;
+  height: var(--stage-h);
+  overflow: hidden;
+  /* Isolates the stage: its repaints never invalidate layout/paint outside it. */
+  contain: strict;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

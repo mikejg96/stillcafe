@@ -1,0 +1,67 @@
+{
+  "still_logo": {
+    "width": 527,
+    "height": 270,
+    "base": "/media/images/still_logo",
+    "widths": [
+      527
+    ],
+    "version": "9c2913ce96"
+  },
+  "arch_room": {
+    "width": 3856,
+    "height": 2170,
+    "base": "/media/images/arch_room",
+    "widths": [
+      800,
+      1600,
+      2400,
+      3856
+    ],
+    "version": "f6cdadd641"
+  },
+  "beans": {
+    "width": 3300,
+    "height": 1666,
+    "base": "/media/images/beans",
+    "widths": [
+      800,
+      1600,
+      2400,
+      3300
+    ],
+    "version": "085781f870"
+  },
+  "grain": {
+    "width": 1686,
+    "height": 933,
+    "base": "/media/images/grain",
+    "widths": [
+      800,
+      1600,
+      1686
+    ],
+    "version": "baab9db4e7"
+  },
+  "matcha": {
+    "width": 1474,
+    "height": 960,
+    "base": "/media/images/matcha",
+    "widths": [
+      800,
+      1474
+    ],
+    "version": "93e5435d94"
+  },
+  "room": {
+    "width": 2000,
+    "height": 1125,
+    "base": "/media/images/room",
+    "widths": [
+      800,
+      1600,
+      2000
+    ],
+    "version": "a14044b99e"
+  }
+}

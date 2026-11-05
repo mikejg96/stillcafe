@@ -1,0 +1,94 @@
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* The text sits dead centre, exactly where the intro's title appears; the niches above it. */
+  background: var(--paper);
+  transition:
+    opacity 0.8s ease,
+    visibility 0s linear 0.8s;
+}
+
+.loader.is-done {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader__grid {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 2.2em);
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: repeat(2, 13px);
+  gap: 5px;
+  align-items: end;
+  font-size: clamp(15px, 1.15vw, 30px);
+}
+
+/* The wall's niches from the room image instead of squares: an arch, a soft shelf, a rounded
+   alcove and a pebble, so it reads as the café's plaster rather than a grid of boxes. */
+.loader__grid span {
+  width: 13px;
+  height: 13px;
+  background: var(--taupe);
+  opacity: 0.2;
+  animation: loader-cell 1.2s ease-in-out infinite;
+}
+
+.loader__grid span:nth-child(1) {
+  height: 17px;
+  border-radius: 6.5px 6.5px 2px 2px;
+}
+.loader__grid span:nth-child(2) {
+  height: 9px;
+  border-radius: 7px 5px 6px 4px / 5px 5px 4px 4px;
+}
+.loader__grid span:nth-child(3) {
+  border-radius: 45% 55% 40% 60% / 55% 45% 55% 45%;
+}
+.loader__grid span:nth-child(4) {
+  height: 15px;
+  border-radius: 6.5px 6.5px 3px 3px / 8px 8px 3px 3px;
+}
+
+/* Clockwise: top-left → top-right → bottom-right → bottom-left (grid order is TL, TR, BL, BR). */
+.loader__grid span:nth-child(1) {
+  animation-delay: -1.2s;
+}
+.loader__grid span:nth-child(2) {
+  animation-delay: -0.9s;
+}
+.loader__grid span:nth-child(4) {
+  animation-delay: -0.6s;
+}
+.loader__grid span:nth-child(3) {
+  animation-delay: -0.3s;
+}
+
+/* Figma F0: Google Sans 29.5px on a 2560 frame. */
+.loader__text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  translate: 0 -50%;
+  text-align: center;
+  /* Percent digits change width; tabular figures keep the line from shifting. */
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(15px, 1.15vw, 30px);
+  color: var(--taupe);
+}
+
+@keyframes loader-cell {
+  0%,
+  50%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

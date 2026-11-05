@@ -1,0 +1,15 @@
+{
+  "seq1": {
+    "frameCount": 186,
+    "width": 1280,
+    "height": 960,
+    "base": "/media/sequences/seq1",
+    "ext": "webp",
+    "pad": 4,
+    "widths": [
+      640,
+      1280
+    ],
+    "version": "678cd9b6a4"
+  }
+}

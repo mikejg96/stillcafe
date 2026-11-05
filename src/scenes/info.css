@@ -1,0 +1,136 @@
+/*
+ * SEQ4. Desktop: Figma "Scroll 8 - interactabl page" / "when clicked." (1920 frame) – three
+ * 520 × 387 blocks, 1560 wide in all, hairline borders, the outer corners rounded 50.
+ * Phone: "IPHONE ONLY" (1080 frame) – full-width 1080 × 500 rows, black text.
+ */
+
+.info {
+  display: grid;
+  place-items: center;
+  padding: 8vh 0 12vh;
+  background: var(--paper);
+}
+
+.info__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 81.25vw;
+}
+
+.info__block {
+  position: relative;
+  aspect-ratio: 520 / 387;
+  overflow: hidden;
+  /* Neighbouring borders overlap into one hairline. */
+  margin-left: -0.5px;
+  padding: 0;
+  border: 0.5px solid var(--dot);
+  background: var(--paper);
+  color: var(--dot);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.info__block:first-child {
+  margin-left: 0;
+  border-radius: 2.6vw 0 0 2.6vw;
+}
+
+.info__block:last-child {
+  border-radius: 0 2.6vw 2.6vw 0;
+}
+
+.info__block:focus-visible {
+  outline: 2px solid var(--taupe);
+  outline-offset: 4px;
+}
+
+.info__media {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.info__media img,
+.info__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The clip fades in over the gradient once it is playing. */
+.info__video {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.info__video.is-playing {
+  opacity: 1;
+}
+
+.info__block.is-active {
+  color: #fff;
+}
+
+.info__block.is-active .info__media {
+  opacity: 1;
+}
+
+/* Google Sans Bold 49 / Regular 27.3 on the 1920 frame; x 50.5, y 41.4 / 280 in a 387 block. */
+.info__title,
+.info__text {
+  position: absolute;
+  left: 9.7%;
+  right: 4%;
+  line-height: 1.2;
+}
+
+.info__title {
+  top: 10.7%;
+  font-weight: 700;
+  font-size: max(20px, 2.555vw);
+}
+
+.info__text {
+  top: 72.4%;
+  font-size: max(12px, 1.42vw);
+}
+
+@media (max-width: 767px) {
+  .info {
+    padding: 0;
+  }
+
+  .info__grid {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .info__block,
+  .info__block:first-child,
+  .info__block:last-child {
+    aspect-ratio: 1080 / 500;
+    margin: -0.5px 0 0;
+    border: 0.5px solid rgb(0 0 0 / 0.6);
+    border-radius: 0;
+    color: #000;
+  }
+
+  .info__block.is-active {
+    color: #fff;
+  }
+
+  /* 70 / 50 px on the 1080 frame; the same x and y proportions as on desktop. */
+  .info__title {
+    font-size: 6.48vw;
+  }
+
+  .info__text {
+    font-size: 4.63vw;
+  }
+}
