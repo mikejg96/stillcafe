@@ -1,6 +1,6 @@
 /*
  * SEQ5, Figma "Scroll 9" (1920 × 1080): white fading to sand at the bottom, the logo 266.7 wide,
- * a rule from x 296 to 1632.5 and four links centred 328.8 apart. The block is 70% of a screen
+ * a rule from x 296 to 1632.5 and links centred 328.8 apart. The block is 70% of a screen
  * tall (Figma's frame is a full one) so the end of the page is a short scroll away.
  */
 
@@ -10,6 +10,11 @@
   min-height: 420px;
   overflow: hidden;
   background: linear-gradient(to top, var(--sand) 7.36%, var(--paper));
+}
+
+/* The logo is the way back to the top of the page. */
+.footer__home {
+  cursor: pointer;
 }
 
 /* Hidden until the footer animates in. */
@@ -44,8 +49,9 @@
   left: 50%;
   translate: -50% 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  width: 68.5vw;
+  grid-template-columns: repeat(3, 1fr);
+  /* Three of Figma's four 328.8-wide columns (68.5vw for four). */
+  width: 51.4vw;
   margin: 0;
   padding: 0;
   list-style: none;

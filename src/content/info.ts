@@ -18,10 +18,12 @@ export const infoBlocks: InfoBlock[] = [
   { id: 'time', title: 'Time?', text: '10 AM - 7 PM Daily', media: images.grain },
 ]
 
-/** SEQ5 – footer links. Placeholder URLs until the real ones are known (see design/SPEC.md). */
+/** SEQ5 – footer links. MENU is still a placeholder (see design/SPEC.md). */
 export const footerLinks = [
   { label: 'MENU', href: '#' },
-  { label: 'INSTAGRAM', href: '#' },
-  { label: 'GOJEK', href: '#' },
-  { label: 'GRAB', href: '#' },
+  { label: 'INSTAGRAM', href: 'https://www.instagram.com/stillcafe.bali/' },
+  {
+    label: 'GRAB',
+    href: 'https://grab.onelink.me/2695613898?pid=inappsharing&c=6-C7AZTVMUHACBC6&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D6-C7AZTVMUHACBC6&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload',
+  },
 ]

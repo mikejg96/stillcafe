@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { preload } from '../app/preload'
 import { imageSrc, images } from '../content/images'
 import { footerLinks } from '../content/info'
-import { env } from '../engine'
+import { env, scroll } from '../engine'
 import { useScene } from '../react'
 import './footer.css'
 
@@ -66,13 +66,23 @@ export function Footer() {
   return (
     <footer ref={section} className="footer">
       {/* Same file as the intro logo, so it comes from the cache. */}
-      <img className="footer__logo" src={imageSrc(logo)} width={logo.width} height={logo.height} alt="Still." />
+      <a
+        className="footer__home"
+        href="#top"
+        aria-label="Back to top"
+        onClick={(e) => {
+          e.preventDefault()
+          scroll.to(0, { duration: 2 })
+        }}
+      >
+        <img className="footer__logo" src={imageSrc(logo)} width={logo.width} height={logo.height} alt="Still." />
+      </a>
       <span className="footer__rule" aria-hidden="true" />
       <nav className="footer__nav" aria-label="Elsewhere">
         <ul>
           {footerLinks.map(({ label, href }) => (
             <li key={label}>
-              <a className="footer__link" href={href}>
+              <a className="footer__link" href={href} {...(href.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}>
                 {label}
               </a>
             </li>
