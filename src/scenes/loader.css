@@ -74,8 +74,6 @@
   top: 50%;
   translate: 0 -50%;
   text-align: center;
-  /* Percent digits change width; tabular figures keep the line from shifting. */
-  font-variant-numeric: tabular-nums;
   font-size: clamp(15px, 1.15vw, 30px);
   color: var(--taupe);
 }

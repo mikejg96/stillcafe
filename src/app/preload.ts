@@ -16,10 +16,8 @@ const MAX_MS = 30_000
 
 const tasks = new Set<Promise<unknown>>()
 const listeners = new Set<() => void>()
-const progressListeners = new Set<(progress: number) => void>()
 const startedAt = performance.now()
 let revealed = false
-let currentProgress = 0
 
 function check() {
   if (revealed || tasks.size > 0 || performance.now() - startedAt < MIN_MS) return
@@ -31,7 +29,6 @@ function reveal() {
   revealed = true
   listeners.forEach((fn) => fn())
   listeners.clear()
-  progressListeners.clear()
 }
 
 setTimeout(check, MIN_MS)
@@ -48,19 +45,6 @@ export const preload = {
     }
     promise.then(done, done)
     return done
-  },
-
-  /** Update current loading progress (0 to 1). */
-  setProgress(value: number) {
-    currentProgress = Math.max(0, Math.min(1, value))
-    progressListeners.forEach((fn) => fn(currentProgress))
-  },
-
-  /** Subscribe to loading progress updates. */
-  onProgress(fn: (progress: number) => void) {
-    fn(currentProgress)
-    progressListeners.add(fn)
-    return () => void progressListeners.delete(fn)
   },
 
   /** Run `fn` on reveal (immediately if it already happened). Returns an unsubscribe fn. */
@@ -112,7 +96,17 @@ export function deferMedia(root: ParentNode) {
       delete img.dataset.srcset
       delete img.dataset.src
     })
+    root.querySelectorAll<HTMLVideoElement>('video[data-src]').forEach(attachVideo)
   })
+}
+
+/** Start buffering a `data-src` video now (also the on-demand fallback before the intro is done). */
+export function attachVideo(video: HTMLVideoElement) {
+  if (!video.dataset.src) return
+  video.preload = 'auto'
+  video.src = video.dataset.src
+  delete video.dataset.src
+  video.load()
 }
 
 preload.track(document.fonts?.ready ?? Promise.resolve())

@@ -1,15 +1,15 @@
 import { gsap } from 'gsap'
 import { useLayoutEffect, useRef } from 'react'
-import { deferMedia } from '../app/preload'
+import { attachVideo, deferMedia } from '../app/preload'
 import { imageSrc, imageSrcSet } from '../content/images'
 import { infoBlocks } from '../content/info'
 import { createScene } from '../engine'
 import './info.css'
 
 /**
- * A block's clip plays (looping) while it is selected and pauses when it isn't. It is only
- * requested the first time its block is selected, so nothing loads until someone asks for it, and
- * it fades in over the gradient once it is actually playing.
+ * A block's clip plays (looping) while it is selected and pauses when it isn't. Clips start
+ * buffering once the intro is done (`deferMedia`), or on first selection if that comes sooner, and
+ * show from their first decoded frame, so a selected block shows video, not the gradient.
  */
 function playClip(block: HTMLElement, active: boolean) {
   const video = block.querySelector<HTMLVideoElement>('.info__video')
@@ -18,10 +18,7 @@ function playClip(block: HTMLElement, active: boolean) {
     video.pause()
     return
   }
-  if (!video.src && video.dataset.src) {
-    video.src = video.dataset.src
-    video.addEventListener('playing', () => video.classList.add('is-playing'), { once: true })
-  }
+  attachVideo(video)
   video.play().catch(() => {
     /* Refused or interrupted (e.g. deselected straight away): the gradient stays. */
   })
@@ -99,10 +96,14 @@ export function Info() {
       return () => select(null)
     })
 
+    const showClip = (e: Event) => (e.target as Element).classList.add('is-playing')
+    const clips = root.querySelectorAll<HTMLVideoElement>('.info__video')
+    clips.forEach((v) => v.addEventListener('loadeddata', showClip, { once: true }))
     const offMedia = deferMedia(root)
     return () => {
       mm.revert()
       offMedia()
+      clips.forEach((v) => v.removeEventListener('loadeddata', showClip))
     }
   }, [])
 

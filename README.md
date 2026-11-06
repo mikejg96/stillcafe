@@ -120,8 +120,10 @@ return <Pinned length={3} ref={section}>{/* stage content */}</Pinned>
 Recommended encode for the intro video (`brew install ffmpeg`):
 
 ```sh
-# H.264, fast start, no audio
-ffmpeg -i in.mov -c:v libx264 -crf 22 -preset slow -pix_fmt yuv420p -movflags +faststart -an out.mp4
+# H.264, fast start, no audio or timecode track. Keep it small (~4 MB for 9 s of 1080p): it must
+# buffer before the loader opens, on phones and slow links too.
+ffmpeg -i in.mov -map 0:v:0 -c:v libx264 -crf 23 -preset slow -profile:v high -level 4.0 \
+  -pix_fmt yuv420p -movflags +faststart -an -map_metadata -1 out.mp4
 
 # An already-encoded file: move the index to the front without re-encoding
 ffmpeg -i in.mp4 -c copy -movflags +faststart -an out.mp4

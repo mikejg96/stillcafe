@@ -63,7 +63,7 @@
   object-fit: cover;
 }
 
-/* The clip fades in over the gradient once it is playing. */
+/* The clip fades in over the gradient once its first frame is decoded. */
 .info__video {
   opacity: 0;
   transition: opacity 0.35s ease;

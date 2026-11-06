@@ -85,8 +85,6 @@ const CUE_OUT = 1.42
 
 /* ─── Loading ────────────────────────────────────────────────────────────── */
 
-/** Loader progress given to the critical resources (fonts, logo); the video gets the rest. */
-const CRITICAL_SHARE = 0.1
 /** Don't hold the video back for a slow font or logo for longer than this. */
 const CRITICAL_TIMEOUT_MS = 3000
 /** Reveal the page anyway if the intro video hasn't buffered by then. */
@@ -103,7 +101,7 @@ const settleWithin = (promise: Promise<unknown>, ms: number) =>
 
 /**
  * Attach the intro video's source – once, even if called twice (StrictMode) – and resolve once it
- * has (nearly) buffered, reporting progress to the loader. Returns the promise and a cleanup fn.
+ * has (nearly) buffered. Returns the promise and a cleanup fn.
  */
 function bufferVideo(video: HTMLVideoElement) {
   let done = false
@@ -113,14 +111,12 @@ function bufferVideo(video: HTMLVideoElement) {
   const finish = () => {
     if (done) return
     done = true
-    preload.setProgress(1)
     resolve()
   }
 
   const onProgress = () => {
     if (!video.buffered.length || !(video.duration > 0)) return
-    const p = Math.min(1, video.buffered.end(video.buffered.length - 1) / video.duration)
-    preload.setProgress(CRITICAL_SHARE + (1 - CRITICAL_SHARE) * p)
+    const p = video.buffered.end(video.buffered.length - 1) / video.duration
     if (p >= 0.95 || video.readyState >= 4) finish()
   }
 
@@ -189,7 +185,6 @@ export function Journey() {
     const untrack = preload.track(
       settleWithin(Promise.all([document.fonts?.ready, logo.decode()]), CRITICAL_TIMEOUT_MS).then(() => {
         if (disposed) return
-        preload.setProgress(CRITICAL_SHARE)
         buffering = bufferVideo(video)
         return buffering.ready
       }),

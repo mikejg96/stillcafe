@@ -9,7 +9,6 @@ import './loader.css'
  */
 export function Loader() {
   const ref = useRef<HTMLDivElement>(null)
-  const textRef = useRef<HTMLParagraphElement>(null)
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -18,13 +17,6 @@ export function Loader() {
     if (!preload.revealed) scroll.to(0, { immediate: true })
     scroll.lock()
 
-    const offProgress = preload.onProgress((p) => {
-      if (textRef.current) {
-        const pct = Math.round(p * 100)
-        textRef.current.textContent = pct > 0 && pct < 100 ? `HOLD STILL ${pct}%` : 'HOLD STILL'
-      }
-    })
-
     const off = preload.onReveal(() => {
       el.classList.add('is-done')
       scroll.unlock()
@@ -32,7 +24,6 @@ export function Loader() {
 
     return () => {
       off()
-      offProgress()
       scroll.unlock()
     }
   }, [])
@@ -47,7 +38,7 @@ export function Loader() {
         <span />
         <span />
       </div>
-      <p ref={textRef} className="loader__text">HOLD STILL</p>
+      <p className="loader__text">HOLD STILL</p>
     </div>
   )
 }
