@@ -1,0 +1,16 @@
+# Cloudflare Pages response headers.
+# Hashed/versioned files never change at the same URL: cache for a year.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/media/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Videos aren't hashed: cache a week at the edge/browser, revalidate after.
+/videos/*
+  Cache-Control: public, max-age=604800
+
+# HTML must always pick up the latest deploy.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
