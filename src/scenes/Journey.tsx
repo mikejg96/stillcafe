@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { preload } from '../app/preload'
 import { imageSrc, imageSrcSet, images } from '../content/images'
-import { introVideo } from '../content/video'
+import { introVideo, introVideoSrc } from '../content/video'
 import { env, scroll } from '../engine'
 import { Pinned, useScene } from '../react'
 import './journey.css'
@@ -129,7 +129,7 @@ function bufferVideo(video: HTMLVideoElement) {
 
   if (!video.getAttribute('src')) {
     video.preload = 'auto'
-    video.src = introVideo.src
+    video.src = introVideoSrc(introVideo)
     video.load()
   } else if (video.readyState >= 4) {
     finish()

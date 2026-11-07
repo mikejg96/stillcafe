@@ -125,6 +125,11 @@ Recommended encode for the intro video (`brew install ffmpeg`):
 ffmpeg -i in.mov -map 0:v:0 -c:v libx264 -crf 23 -preset slow -profile:v high -level 4.0 \
   -pix_fmt yuv420p -movflags +faststart -an -map_metadata -1 out.mp4
 
+# Phone version (served below 900 px wide, see src/content/video.ts): 720p, ~1.3 MB
+ffmpeg -i in.mov -map 0:v:0 -vf scale=1280:720:flags=lanczos -c:v libx264 -crf 24 -preset slow \
+  -profile:v high -level 4.0 -maxrate 1.6M -bufsize 3.2M -pix_fmt yuv420p -movflags +faststart \
+  -an -map_metadata -1 intro-720.mp4
+
 # An already-encoded file: move the index to the front without re-encoding
 ffmpeg -i in.mp4 -c copy -movflags +faststart -an out.mp4
 ```
