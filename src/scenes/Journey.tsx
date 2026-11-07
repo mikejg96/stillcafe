@@ -93,7 +93,7 @@ const VIDEO_LOAD_TIMEOUT_MS = 8000
 const FALLBACK_DURATION_S = 9
 /** A stalled stream unlocks the page this long after the video should have ended. */
 const WATCHDOG_S = 4
-/** At the end of the intro, wait at most this long for the room image before unlocking. */
+/** Wait at most this long for the room image (with the video, and again before unlocking). */
 const ROOM_TIMEOUT_MS = 2500
 
 const settleWithin = (promise: Promise<unknown>, ms: number) =>
@@ -181,12 +181,18 @@ export function Journey() {
     let disposed = false
     let buffering: ReturnType<typeof bufferVideo> | undefined
 
-    // One task for both phases, so the loader can't open in the gap between them.
+    // One task for both phases, so the loader can't open in the gap between them. The room is
+    // fetched and decoded alongside the video, while the loader is still up: decoding it (and
+    // painting its large, scaled-up layer) once the intro plays makes the video stutter on iPhone.
     const untrack = preload.track(
       settleWithin(Promise.all([document.fonts?.ready, logo.decode()]), CRITICAL_TIMEOUT_MS).then(() => {
         if (disposed) return
         buffering = bufferVideo(video)
-        return buffering.ready
+        if (room.dataset.srcset) {
+          room.srcset = room.dataset.srcset
+          delete room.dataset.srcset
+        }
+        return Promise.all([buffering.ready, settleWithin(room.decode(), ROOM_TIMEOUT_MS)])
       }),
     )
 
@@ -232,12 +238,6 @@ export function Journey() {
     }
 
     const offReveal = preload.onReveal(() => {
-      // The room only shows once the video has ended: fetch it now the video is buffered.
-      if (room.dataset.srcset) {
-        room.srcset = room.dataset.srcset
-        delete room.dataset.srcset
-      }
-
       if (env.reducedMotion) {
         gsap.set(['.journey__tagline', '.journey__logo'], { opacity: 1 })
         logoShown = true
@@ -344,7 +344,7 @@ export function Journey() {
               </h1>
             </div>
 
-            {/* Requested on reveal, once the video is buffered (see the effect above). */}
+            {/* Requested with the intro video, once the fonts and logo are in (see the effect above). */}
             <img
               ref={roomRef}
               className="journey__room"

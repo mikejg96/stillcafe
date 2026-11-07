@@ -92,6 +92,13 @@
   opacity: 0;
 }
 
+/* They fade in from a blur over the playing video: on their own GPU layers, so Safari doesn't
+   repaint the blur on the main thread every frame (which makes the video stutter on iPhone). */
+.journey__tagline,
+.journey__logo {
+  will-change: opacity, filter;
+}
+
 /* Figma: "[n.]" Inter ExtraLight 27.2 px, the line Google Sans 29.5 px, 20 px apart. Centred on
    the screen (the frame is centred on it), where the loader's "HOLD STILL" also sits. */
 .journey__tagline {
